@@ -1,14 +1,12 @@
- # feng-products
+# feng-products
 
 峰的一人公司 · 产品货架
 
 ## 在售产品
 
-（即将上架，敬请期待）
-
 | 产品 | 免费引流版 | 收费版 |
 | ---- | ---------- | ------ |
-| 待定 | 公开试用   | 微信社群手动交易 |
+| [口播视频一键剪辑 SKILL（竖版）](skills/video-edit/README.md) | [SKILL.md](skills/video-edit/SKILL.md) 公开试用 | 完整工具包，微信社群手动交易 |
 
 ## 购买说明
 
