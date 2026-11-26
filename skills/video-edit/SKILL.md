@@ -8,7 +8,7 @@
 ## 适合谁
 
 - 每天做口播、知识分享的短视频博主，想把剪辑变成固定流程而不是每天重新发明
-- 有自己的 AI 助手（Claude Code、Cursor 等）可执行本 Skill 的人
+- 有自己的 AI 助手（Claude Code、Codex、Cursor、WorkBuddy 等）可执行本 Skill 的人
 - 认同“录一条过、剪一条过”：出镜者每天只录一遍，不返工、不精修
 
 ## 输入清单（缺一不可，不齐不开工）
@@ -23,7 +23,7 @@
 - Python 3 + `sherpa-onnx` + `soundfile` + `Pillow`（转写、字幕生成、封面生成）
 - SenseVoice 中文转写模型（sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8），use_itn=True
 - 思源黑体 Regular / Bold（或同等无衬线中文字体）
-- 工具脚本：`tools/`（`pipe.py` 切气口 → `gen_subs.py` 滚动字幕 → `render.py` 渲染内容 → `make_cover.py` 封面 → `prepend_cover.py` 拼成片）
+- 工具脚本：`tools/`（`transcribe.py` 全文转写 + `pipe.py` 切气口 → `gen_subs.py` 滚动字幕 → `render.py` 渲染内容 → `make_cover.py` 封面 → `prepend_cover.py` 拼成片；短语文件格式见 `tools/phrases.example.json`）
 
 ## 执行流程
 
@@ -61,6 +61,33 @@
 - 封面 1.2s（静音 AAC）+ 内容，concat 拼合。
 - **成片文件名每版不同，绝不重名覆盖**：`成片-视频日记DayNNN-<标题>.mp4`。旧版改名保留，不删。
 - 输出 1080x1920，30fps，H.264 mp4，faststart。
+
+## 工具用法（tools/，按顺序跑）
+
+```bash
+# 0. 准备：下载 SenseVoice 模型，装好思源黑体；设模型目录
+export SENSEVOICE_MODEL_DIR=<模型目录>
+
+# 1. 切气口（产出 work/segments.json 等）
+python3 tools/pipe.py 原片.mov work/
+
+# 2. 全文转写（文字权威来源），逐句听音校对后写短语文件
+python3 tools/transcribe.py work/audio_16k.wav work/transcript.txt
+# 短语：全文拆 ≤8 字一句，标原时间起止，存 work/phrases.json（格式见 tools/phrases.example.json）
+
+# 3. 生成滚动字幕
+python3 tools/gen_subs.py --segments work/segments.json --phrases work/phrases.json --out work/subs.ass
+
+# 4. 渲染内容（不带封面）
+python3 tools/render.py --video 原片.mov --segments work/segments.json --subs work/subs.ass --out out/content.mp4
+
+# 5. 做封面（底图取当日视频帧，缩到 1080x1920）
+python3 tools/make_cover.py --bg work/frame.png --title1 第一排标题 --title2 第二排标题 --date 2026/11/25 --day Day001 --out work/cover.png
+# 品牌项可改：--diary-text 视频日记 --copyright "©Copyright 2026 你的品牌" --accent 00FFFC
+
+# 6. 拼成片
+python3 tools/prepend_cover.py work/cover.png out/content.mp4 out/成片-视频日记Day001-标题.mp4
+```
 
 ## 验片（交付前必做，不验不发）
 
